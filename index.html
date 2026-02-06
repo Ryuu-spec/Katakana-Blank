@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>가타카나 오십음도표 빈칸 채우기</title>
+    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=Libre+Baskerville:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Klee One', cursive;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            background: #2d5a5a;
+            border-radius: 20px;
+            padding: 1.5vh 1.5vw;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 95vw;
+            height: 95vh;
+            max-width: 1920px;
+            max-height: 1080px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 1vh 2vw;
+            margin-bottom: 1.5vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            flex-shrink: 0;
+            min-height: 0;
+        }
+
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .title {
+            font-size: 2vw;
+            color: #2d5a5a;
+            font-weight: 700;
+            font-family: 'Libre Baskerville', serif;
+            white-space: nowrap;
+        }
+
+        .reset-btn {
+            width: 3vh;
+            height: 3vh;
+            min-width: 30px;
+            min-height: 30px;
+            background: #2d5a5a;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(45, 90, 90, 0.3);
+            flex-shrink: 0;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px) rotate(90deg);
+            box-shadow: 0 6px 20px rgba(45, 90, 90, 0.4);
+        }
+
+        .reset-btn:active {
+            transform: translateY(0) rotate(90deg);
+            box-shadow: 0 2px 10px rgba(45, 90, 90, 0.3);
+        }
+
+        .reset-btn svg {
+            width: 22px;
+            height: 22px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .timer {
+            font-size: 1.8vw;
+            color: #2d5a5a;
+            font-weight: 600;
+            font-family: 'Libre Baskerville', serif;
+            white-space: nowrap;
+            position: absolute;
+            right: 2vw;
+        }
+
+        .game-area {
+            display: flex;
+            gap: 1.5vw;
+            align-items: stretch;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 2;
+            background: white;
+            border-radius: 15px;
+            padding: 1vh;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .hiragana-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.5vh;
+            grid-auto-rows: 1fr;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .cell {
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2vw;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .cell.empty {
+            background: white;
+            border: 2px solid #d4b5f0;
+        }
+
+        .cell.filled {
+            background: #e8d4f8;
+            border: 2px solid #d4b5f0;
+        }
+
+        .cell.matched {
+            background: #c8b6e2;
+            border: 2px solid #a89cc9;
+            color: #4a4a4a;
+        }
+
+        .cell.blank {
+            background: white;
+            border: none;
+            cursor: default;
+        }
+
+        .cell.selected {
+            transform: scale(0.95);
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .cell.n-box {
+            background: #c8b6e2;
+            border: 2px solid #a89cc9;
+            color: #4a4a4a;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        .right-panel {
+            flex: 1;
+            background: white;
+            border-radius: 15px;
+            padding: 1vh;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .chars-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5vh;
+            grid-auto-rows: 1fr;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .char-tile {
+            background: #ffd4d4;
+            border: 2px solid #ffb8b8;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2vw;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #4a4a4a;
+            min-height: 0;
+        }
+
+        .char-tile:hover {
+            background: #ffbbbb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .char-tile:active {
+            transform: scale(0.95);
+        }
+
+        .char-tile.used {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .char-tile.selected {
+            transform: scale(0.95);
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 1200px) {
+            .header {
+                flex-direction: column;
+                gap: 10px;
+                padding: 1.5vh 2vw;
+            }
+            
+            .timer {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-center">
+                <h1 class="title">가타카나 오십음도표 빈칸 채우기</h1>
+                <button class="reset-btn" onclick="resetGame()" title="새 게임">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="timer" id="timer">00:00</div>
+        </div>
+
+        <div class="game-area">
+            <div class="left-panel">
+                <div class="hiragana-grid" id="grid"></div>
+            </div>
+
+            <div class="right-panel">
+                <div class="chars-grid" id="chars"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 가타카나 50음도 전체 구조
+        const fullHiraganaTable = [
+            ['ア', 'イ', 'ウ', 'エ', 'オ'],           // ア행
+            ['カ', 'キ', 'ク', 'ケ', 'コ'],           // カ행
+            ['サ', 'シ', 'ス', 'セ', 'ソ'],           // サ행
+            ['タ', 'チ', 'ツ', 'テ', 'ト'],           // タ행
+            ['ナ', 'ニ', 'ヌ', 'ネ', 'ノ'],           // ナ행
+            ['ハ', 'ヒ', 'フ', 'ヘ', 'ホ'],           // ハ행
+            ['マ', 'ミ', 'ム', 'メ', 'モ'],           // マ행
+            ['ヤ', 'blank', 'ユ', 'blank', 'ヨ'],     // ヤ행
+            ['ラ', 'リ', 'ル', 'レ', 'ロ'],           // ラ행
+            ['ワ', 'blank', 'blank', 'blank', 'ヲ', 'ン-box']  // ワ행
+        ];
+
+        // 배열 셔플 함수 (Fisher-Yates shuffle)
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // 랜덤으로 50음도표 배치를 생성하는 함수
+        function generateRandomLayout() {
+            // 모든 실제 문자들의 위치를 수집
+            const allPositions = [];
+            fullHiraganaTable.forEach((row, rowIndex) => {
+                row.forEach((char, colIndex) => {
+                    if (char !== 'blank' && char !== 'ン-box') {
+                        allPositions.push({ row: rowIndex, col: colIndex, char: char });
+                    }
+                });
+            });
+
+            // 랜덤하게 섞기
+            const shuffledPositions = shuffleArray(allPositions);
+            
+            // 총 45개 중 27개는 보이기, 18개는 숨기기
+            const visibleCount = 27;
+            const hiddenPositions = shuffledPositions.slice(visibleCount);
+            
+            // 새로운 테이블과 정답 맵 생성
+            const newTable = fullHiraganaTable.map(row => [...row]);
+            const newAnswerMap = {};
+            const newCharsList = [];
+            
+            hiddenPositions.forEach(pos => {
+                newTable[pos.row][pos.col] = '';  // 빈칸으로 만들기
+                newAnswerMap[`${pos.row}-${pos.col}`] = pos.char;  // 정답 맵에 추가
+                newCharsList.push(pos.char);  // 오른쪽 패널에 추가할 문자
+            });
+            
+            return { table: newTable, answerMap: newAnswerMap, charsList: newCharsList };
+        }
+
+        let currentLayout = generateRandomLayout();
+        let hiraganaTable = currentLayout.table;
+        let answerMap = currentLayout.answerMap;
+        let charsListOriginal = currentLayout.charsList;
+
+
+        let selectedCell = null;
+        let selectedChar = null;
+        let startTime = null;
+        let timerInterval = null;
+        let usedChars = new Set();
+        let isTimerStarted = false;
+
+        function initGame() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+
+            // 왼쪽 그리드 생성
+            hiraganaTable.forEach((row, rowIndex) => {
+                row.forEach((char, colIndex) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    
+                    if (char === 'blank') {
+                        // 완전히 비어있는 칸 (배경 없음)
+                        cell.classList.add('blank');
+                    } else if (char === 'ン-box') {
+                        // ン 전용 박스
+                        cell.classList.add('filled', 'n-box');
+                        cell.textContent = 'ン';
+                    } else if (char === '') {
+                        // 빈칸 (채워야 할 칸)
+                        cell.classList.add('empty');
+                        cell.dataset.row = rowIndex;
+                        cell.dataset.col = colIndex;
+                        cell.addEventListener('click', () => selectCell(cell));
+                    } else {
+                        // 이미 채워진 칸
+                        cell.classList.add('filled', 'matched');
+                        cell.textContent = char;
+                    }
+                    
+                    grid.appendChild(cell);
+                });
+            });
+
+            // 오른쪽 문자 패널 생성 (랜덤 셔플) - 항상 랜덤으로 섞임
+            const charsPanel = document.getElementById('chars');
+            charsPanel.innerHTML = '';
+
+            const charsList = shuffleArray(charsListOriginal);  // 매번 랜덤으로 섞기
+
+            charsList.forEach(char => {
+                const tile = document.createElement('div');
+                tile.className = 'char-tile';
+                tile.textContent = char;
+                tile.dataset.char = char;
+                tile.addEventListener('click', () => selectCharTile(tile, char));
+                charsPanel.appendChild(tile);
+            });
+
+            // 타이머는 첫 클릭 시 시작됨
+        }
+
+        function selectCell(cell) {
+            if (cell.classList.contains('matched')) return;
+
+            // 첫 클릭 시 타이머 시작
+            if (!isTimerStarted) {
+                startTimer();
+                isTimerStarted = true;
+            }
+
+            // 이전 선택 해제
+            if (selectedCell && selectedCell !== cell) {
+                selectedCell.classList.remove('selected');
+            }
+
+            // 새로운 셀 선택
+            selectedCell = cell;
+            cell.classList.add('selected');
+
+            // 이미 문자가 선택되어 있으면 매칭 시도
+            if (selectedChar) {
+                tryMatch();
+            }
+        }
+
+        function selectCharTile(tile, char) {
+            if (tile.classList.contains('used')) return;
+
+            // 첫 클릭 시 타이머 시작
+            if (!isTimerStarted) {
+                startTimer();
+                isTimerStarted = true;
+            }
+
+            // 이전 선택 해제
+            const previousSelected = document.querySelector('.char-tile.selected');
+            if (previousSelected && previousSelected !== tile) {
+                previousSelected.classList.remove('selected');
+            }
+
+            // 새로운 문자 선택
+            selectedChar = { tile, char };
+            tile.classList.add('selected');
+
+            // 이미 셀이 선택되어 있으면 매칭 시도
+            if (selectedCell) {
+                tryMatch();
+            }
+        }
+
+        function tryMatch() {
+            const row = selectedCell.dataset.row;
+            const col = selectedCell.dataset.col;
+            const key = `${row}-${col}`;
+
+            // 정답 확인
+            if (answerMap[key] === selectedChar.char) {
+                // 정답!
+                selectedCell.textContent = selectedChar.char;
+                selectedCell.classList.remove('empty', 'selected');
+                selectedCell.classList.add('matched');
+                selectedChar.tile.classList.add('used');
+                selectedChar.tile.classList.remove('selected');
+                usedChars.add(selectedChar.char);
+
+                // 선택 초기화
+                selectedCell = null;
+                selectedChar = null;
+
+                // 완성 체크
+                checkComplete();
+            } else {
+                // 오답 - 흔들기 애니메이션
+                selectedCell.classList.add('shake');
+                selectedChar.tile.classList.add('shake');
+
+                setTimeout(() => {
+                    selectedCell.classList.remove('shake', 'selected');
+                    selectedChar.tile.classList.remove('shake', 'selected');
+                    selectedCell = null;
+                    selectedChar = null;
+                }, 500);
+            }
+        }
+
+        function checkComplete() {
+            const emptyCells = document.querySelectorAll('.cell.empty');
+            if (emptyCells.length === 0) {
+                stopTimer();
+                // 완성되면 타이머만 멈춤
+            }
+        }
+
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('timer').textContent = 
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function resetGame() {
+            selectedCell = null;
+            selectedChar = null;
+            usedChars.clear();
+            isTimerStarted = false;
+            if (timerInterval) clearInterval(timerInterval);
+            document.getElementById('timer').textContent = '00:00';
+            
+            // 새로운 랜덤 배치 생성
+            currentLayout = generateRandomLayout();
+            hiraganaTable = currentLayout.table;
+            answerMap = currentLayout.answerMap;
+            charsListOriginal = currentLayout.charsList;
+            
+            initGame();
+        }
+
+        // 게임 시작 - 첫 로딩시에도 랜덤으로 배치됨
+        initGame();
+    </script>
+</body>
+</html>
