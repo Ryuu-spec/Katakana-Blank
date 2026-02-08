@@ -291,6 +291,72 @@
     </div>
 
     <script>
+        // 사운드 생성 함수들
+        function playCorrectSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 523.25; // C5
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.2);
+        }
+
+        function playIncorrectSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 200; // Lower tone
+            oscillator.type = 'sawtooth';
+            
+            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.15);
+        }
+
+        function playCelebrationSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [523.25, 659.25, 783.99, 1046.50]; // C, E, G, C
+            
+            notes.forEach((freq, index) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = freq;
+                oscillator.type = 'sine';
+                
+                const startTime = audioContext.currentTime + (index * 0.15);
+                gainNode.gain.setValueAtTime(0.3, startTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.4);
+                
+                oscillator.start(startTime);
+                oscillator.stop(startTime + 0.4);
+            });
+        }
+
+        // CSS 애니메이션 추가
+        const style = document.createElement('style');
+        style.textContent = `
+        `;
+        document.head.appendChild(style);
+
         // 가타카나 50음도 전체 구조
         const fullHiraganaTable = [
             ['ア', 'イ', 'ウ', 'エ', 'オ'],           // ア행
@@ -468,7 +534,8 @@
 
             // 정답 확인
             if (answerMap[key] === selectedChar.char) {
-                // 정답!
+                // 정답! - 매칭 성공 사운드 재생
+                playCorrectSound();
                 selectedCell.textContent = selectedChar.char;
                 selectedCell.classList.remove('empty', 'selected');
                 selectedCell.classList.add('matched');
@@ -483,7 +550,8 @@
                 // 완성 체크
                 checkComplete();
             } else {
-                // 오답 - 흔들기 애니메이션
+                // 오답 - 실패 사운드 재생 및 흔들기 애니메이션
+                playIncorrectSound();
                 selectedCell.classList.add('shake');
                 selectedChar.tile.classList.add('shake');
 
@@ -500,7 +568,8 @@
             const emptyCells = document.querySelectorAll('.cell.empty');
             if (emptyCells.length === 0) {
                 stopTimer();
-                // 완성되면 타이머만 멈춤
+                // 모두 성공했을 때 축하 사운드
+                playCelebrationSound();
             }
         }
 
